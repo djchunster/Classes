@@ -1,0 +1,60 @@
+---
+title: "NYPD Shooting Incident Data Report"
+author: "D. Chun"
+date: "6/18/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r lib}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Question
+Is there an age group that is more prone to being shot?
+
+## Source and Data Summary
+Source:https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD
+The data contains information about NYPD shooting incidents. The incident reports contain information such as incident key, date of the occurrence, time of the occurrence, boroughs of New York where the incident occurred, precinct, jurisdiction code, location of the incident, statistical murder flag, group age of the perpetrator, sex of the perpetrator, race of the perpetrator, group age of the victim, sex of the victim, race of the victim, x and y coordinates, and the longitude and latitude.
+
+## Analysis
+The victim sex frequency graph shows that a majority of the victims are male while only a small percentage are female are undetermined. 
+The victim age group frequency graph shows that the majority of the victims fall between 25 and 44 years old followed closely by victims between 18 and 24 years old. The rest of the age groups are much lower when compared to the two highest. This answers the question posed at the top where the age group that is most prone to getting shot in New York City is the group that falls between 25 and 44 year old. 
+The model was created to check if there were any relevant information between the time of the shooting occurrence and the age group of the victims. However the data shows there is no relevant information that can be pulled. A linear regression was created from this data but no useful information can be observed. 
+
+## Conclusion
+
+The question is answered where victims between the age of 25 and 44 are shot more than any other age group. Whether there is a correlation is yet to been seen with the data used and interpreted, further analysis and modeling is required. There is no known bias in the data gathering but there is some bias in the variables picked. As a male in his mid twenties I was curious in which sex had more victims and which age group were more affected. 
+
+
+
+```{r}
+nypd<-"https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD"
+nypd.data<- read_csv(nypd)
+#nypd.data
+nypd.data<- nypd.data %>% select(-c(INCIDENT_KEY,JURISDICTION_CODE,LOCATION_DESC,X_COORD_CD,Y_COORD_CD,Latitude,Longitude,Lon_Lat))
+#nypd.data
+vic_sex<- nypd.data[ ,10]
+barplot(prop.table(table(vic_sex)) ,ylab = "Frequency", xlab= "Sex of Victim", main = "Frequency of Sex of Victims",col="blue")
+vic_age<- nypd.data[ ,9]
+barplot(prop.table(table(vic_age)),ylab = "Frequency", xlab= "Age Group of Victim", main = "Frequency of Age Group of Victims",col="red")
+
+vic_sex_factor<-factor(vic_sex)
+is.factor(vic_sex_factor)
+
+vic_age_factor<-factor(vic_age)
+is.factor(vic_age_factor)
+#vic_age_factor[1:6]
+
+occur<-nypd.data[ ,2]
+#summary(occur)
+
+nypdlm<-lm(OCCUR_TIME~VIC_AGE_GROUP, data = nypd.data)
+nypdlm
+nypd.plot<-ggplot(data=nypd.data,aes(x=VIC_AGE_GROUP,y=OCCUR_TIME))+geom_point()+geom_smooth() + ggtitle("Victim Age Group Vs. Time of Occurance") +
+  xlab("Victim Age Group") + ylab("Time of Occurance")
+nypd.plot
+
+```
